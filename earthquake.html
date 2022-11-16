@@ -8,11 +8,11 @@
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
     <style>
+        /* Make the main viewport in full window */
         body {
             margin: 0;
             padding: 0;
         }
-
         #container {
             display: flex;
             height: 100vh;
@@ -20,11 +20,12 @@
             align-items: stretch;
         }
 
+        /* Divide viewport to two parts using Flex
+           (Side panel on left, map on right) */
         #side-panel {
             flex-basis: 500px;
             overflow-y: scroll;
         }
-
         #map {
             flex-grow: 1;
         }
@@ -33,19 +34,18 @@
             margin-bottom: 10px;
         }
 
+        /*Determine the style of table.*/
         table {
             border-collapse: collapse;
             border-spacing: 0;
             width: 100%;
             border: 1px solid #ddd;
         }
-
         th,
         td {
             text-align: left;
             padding: 16px;
         }
-
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
@@ -72,44 +72,47 @@
 
     </main>
     <script>
-        // define the mapbox access token
-        mapboxgl.accessToken =
-            'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
+        // Define the mapbox access token
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYXByaWw0MjkiLCJhIjoiY2xhazBnbjVpMGZqdjN2bXhhc2g1ZTI2NyJ9.1quhD-3WIUORxYG0TJhaPA';
 
-        // define the map object
+        // Define the map object
         let map = new mapboxgl.Map({
             container: 'map', // container ID
-            style: 'mapbox://styles/mapbox/satellite-v9', // style URL
+            style: 'mapbox://styles/mapbox/satellite-v9', // style URL - satellite imagery layer
             zoom: 5.5, // starting zoom
-            center: [138, 38] // starting center
+            center: [138, 38] // starting center - center of Japan
         });
 
 
-
+        // Load GeoJSON asynchronously(data loading)
+        // @fetch - fetch resources asynchronoously across network
+        // @await - only works inside async functions within regular JS
         async function geojsonFetch() {
-
+            // Two geojason objects(earthquakes, Japan) are fetched
             let response, earthquakes, japan, table;
             response = await fetch('assets/earthquakes.geojson');
             earthquakes = await response.json();
             response = await fetch('assets/japan.json');
             japan = await response.json();
-
+            // Generate table
             table = document.getElementsByTagName("table")[0];
             let row, cell1, cell2, cell3;
             for (let i = 0; i < earthquakes.features.length; i++) {
                 // Create an empty <tr> element and add it to the 1st position of the table:
+                // @innerHTML - assign HTML or text to its content
                 row = table.insertRow(-1);
                 cell1 = row.insertCell(0);
                 cell2 = row.insertCell(1);
                 cell3 = row.insertCell(2);
-                cell1.innerHTML = earthquakes.features[i].properties.id;
-                cell2.innerHTML = earthquakes.features[i].properties.mag;
+                cell1.innerHTML = earthquakes.features[i].properties.id; //id
+                cell2.innerHTML = earthquakes.features[i].properties.mag; //magnititude
                 cell3.innerHTML = new Date(earthquakes.features[i].properties.time).toLocaleDateString(
-                    "en-US");
+                    "en-US"); //timestamp
             }
 
 
-            //load data to the map as new layers and table on the side.
+            // Add map layers by loading data
+            // @paint - style the geometic features
             map.on('load', function loadingData() {
 
                 map.addSource('earthquakes', {
@@ -150,32 +153,32 @@
         }
 
         geojsonFetch();
-
+        // Create button for sorting
         let btn = document.getElementsByTagName("button")[0];
 
         btn.addEventListener('click', sortTable);
 
-        // define the function to sort table
+        // Define the function to sort table
         function sortTable(e) {
             let table, rows, switching, i, x, y, shouldSwitch;
             table = document.getElementsByTagName("table")[0];
             switching = true;
-            /*Make a loop that will continue until
-            no switching has been done:*/
+            /* Make a loop that will continue until
+            no switching has been done: */
             while (switching) {
-                //start by saying: no switching is done:
+                //Start by saying: no switching is done:
                 switching = false;
                 rows = table.rows;
-                /*Loop through all table rows (except the
-                first, which contains table headers):*/
+                /* Loop through all table rows (except the
+                first, which contains table headers): */
                 for (i = 1; i < (rows.length - 1); i++) {
-                    //start by saying there should be no switching:
+                    //Start by saying there should be no switching:
                     shouldSwitch = false;
-                    /*Get the two elements you want to compare,
+                    /* Get the two elements you want to compare,
                     one from current row and one from the next:*/
                     x = parseFloat(rows[i].getElementsByTagName("td")[1].innerHTML);
                     y = parseFloat(rows[i + 1].getElementsByTagName("td")[1].innerHTML);
-                    //check if the two rows should switch place:
+                    //Check if the two rows should switch place:
                     if (x < y) {
                         //if so, mark as a switch and break the loop:
                         shouldSwitch = true;
@@ -183,8 +186,8 @@
                     }
                 }
                 if (shouldSwitch) {
-                    /*If a switch has been marked, make the switch
-                    and mark that a switch has been done:*/
+                    /* If a switch has been marked, make the switch
+                    and mark that a switch has been done: */
                     rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
                     switching = true;
                 }

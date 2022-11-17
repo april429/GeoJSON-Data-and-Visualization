@@ -35,9 +35,11 @@
 
         }
 
-        button {
-            margin-bottom: 10px;
+        h2, button {
+            margin-bottom: 20px;
+            margin-left: 10px;
         }
+
         table {
             border-collapse: collapse;
             border-spacing: 0;
@@ -56,7 +58,7 @@
         }
 
         @media screen and (max-width: 1024px) {
-            #table{
+            #side-panel{
                 display:none
             }
         }
@@ -67,15 +69,16 @@
 <body>
     <main id="container">
         <div id="map"></div>
-        <div id="table">
+        <div id="side-panel">
 
             <h2>UW Libraries</h2>
-            <button onclick="sortTable()">Sort by Magnitude</button>
+            <button>Sort by Openning Time</button>
 
             <table>
                 <tr>
-                    <th>id</th>
-                    <th>magnitude</th>
+                    <th>Library</th>
+                    <th>Opening Time</th>
+                    <th>Closing TIme</th>
                 </tr>
             </table>
 
@@ -83,45 +86,42 @@
 
     </main>
     <script>
-        /* MAP BASIC LOADING */
+        /* Mapbox Access Token */
         mapboxgl.accessToken = 'pk.eyJ1IjoiYXByaWw0MjkiLCJhIjoiY2xhazBnbjVpMGZqdjN2bXhhc2g1ZTI2NyJ9.1quhD-3WIUORxYG0TJhaPA';
-        const map = new mapboxgl.Map({
+        // define map object
+        let map = new mapboxgl.Map({
             container: 'map', // container ID
             style: 'mapbox://styles/mapbox/streets-v11', // style URL
             zoom: 14.7, // starting zoom
             center: [-122.3095, 47.654] // starting center
         });
-        /* GEOJSON FETCH */
+
+        /* GEOJSON Fetch */
         async function geojsonFetch() {
-            // Set variables
+            // two geojson objects (libraries, uw)
             let response, libraries, uw, table;
-            // libraries data
             response = await fetch('assets/libraries.geojson');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
             libraries = await response.json();
-            // uw data
             response = await fetch('assets/uw.json');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
             uw = await response.json();
-            // Generate table
+
+            // generate table
             table = document.getElementsByTagName("table")[0];
-            let row, cell1, cell2;
+            let row, cell1, cell2, cell3;
             for (let i = 0; i < libraries.features.length; i++) {
-                // Create an empty <tr> element and add it to the 1st position of the table:
-                row = table[0].insertRow(-1);
+                // create an empty <tr> element and add it to the 1st position of the table:
+                row = table.insertRow(-1); // table => table[0]
                 cell1 = row.insertCell(0);
                 cell2 = row.insertCell(1);
-                cell1.innerHTML = await libraries.features[i].properties.id;
-                cell2.innerHTML = await libraries.features[i].properties.magnititude;
+                cell3 = row.insertCell(2);
+                cell1.innerHTML = await libraries.features[i].properties.Library;
+                cell2.innerHTML = await libraries.features[i].properties.Open;
+                cell3.innerHTML = await libraries.features[i].properties.Close;
             }
 
-            /* ADD MAP LAYERS */
+            // add map layers
             map.on('load', function loadingData() {
-                // libraries data
+
                 map.addSource('libraries', {
                     type: 'geojson',
                     data: libraries
@@ -137,7 +137,7 @@
                         'circle-stroke-color': 'white'
                     }
                 });
-                // uw data
+
                 map.addSource('uw', {
                     type: 'geojson',
                     data: uw
@@ -155,17 +155,14 @@
         }
 
         geojsonFetch()
-            .catch(e => {
-                console.log('There has been a problem with your fetch operation: ' + e.message);
-            });
 
-        /* CREATE BUTTON */
+        /* BUTTON */
         let btn = document.getElementsByTagName("button")[0];
         btn.addEventListener('click', sortTable);
 
-        /* SORT TABLE */
+        /* Sort Table */
         function sortTable() {
-            var table, rows, switching, i, x, y, shouldSwitch;
+            let table, rows, switching, i, x, y, shouldSwitch;
             table = document.getElementsByTagName("table")[0];
             switching = true;
             /*Make a loop that will continue until
@@ -181,10 +178,16 @@
                     shouldSwitch = false;
                     /*Get the two elements you want to compare,
                     one from current row and one from the next:*/
-                    x = parseFloat(rows[i].getElementsByTagName("td")[1].innerHTML);
-                    y = parseFloat(rows[i + 1].getElementsByTagName("td")[1].innerHTML);
+                    timeX = (rows[i].getElementsByTagName("td")[1].textContent);
+                    let hrMinx = timeX.substring(0,timeX.length-2).split(":");
+                    x = parseInt(hrMinx[0])* 60 + parseInt(hrMinx[1]);
+
+                    timeY = (rows[i + 1].getElementsByTagName("td")[1].textContent);
+                    let hrMiny = timeY.substring(0,timeY.length-2).split(":");
+                    y = parseInt(hrMiny[0])* 60 + parseInt(hrMiny[1]);
+
                     //check if the two rows should switch place:
-                    if (x < y) {
+                    if (x > y) {
                         //if so, mark as a switch and break the loop:
                         shouldSwitch = true;
                         break;

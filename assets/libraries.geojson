@@ -1,0 +1,145 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Odegaard Undergraduate Libary",
+        "magnititude": 7
+      },
+      "geometry": {
+        "coordinates": [
+          -122.31040020632975,
+          47.6564657947859
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Engineering Library",
+        "magnititude": 6
+      },
+      "geometry": {
+        "coordinates": [
+          -122.3045104167765,
+          47.65462421170824
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Allen Library",
+        "magnititude": 8
+      },
+      "geometry": {
+        "coordinates": [
+          -122.30704189462531,
+          47.65554105252926
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Suzallo Library",
+        "magnititude": 9
+      },
+      "geometry": {
+        "coordinates": [
+          -122.30816162950721,
+          47.655770915032775
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "East Asia Library",
+        "magnititude": 5
+      },
+      "geometry": {
+        "coordinates": [
+          -122.3078097128301,
+          47.656369510553134
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Chemistry Library",
+        "magnititude": 4
+      },
+      "geometry": {
+        "coordinates": [
+          -122.30994644067079,
+          47.65369116232685
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Li Lu Library",
+        "magnititude": 3
+      },
+      "geometry": {
+        "coordinates": [
+          -122.31051801835153,
+          47.65174798246463
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Environmental Library",
+        "magnititude": 5
+      },
+      "geometry": {
+        "coordinates": [
+          -122.31265980581978,
+          47.65481404888476
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Music Library",
+        "magnititude": 1
+      },
+      "geometry": {
+        "coordinates": [
+          -122.3059159729419,
+          47.65765669294146
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Art Library",
+        "magnititude": 2
+      },
+      "geometry": {
+        "coordinates": [
+          -122.30649083440937,
+          47.658221313576064
+        ],
+        "type": "Point"
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 {
   "type": "FeatureCollection",
+  "name": "uw",
   "features": [
     {
       "type": "Feature",

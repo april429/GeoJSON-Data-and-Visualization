@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Libraries in WA</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #container {
+            display: flex;
+            height: 100vh;
+            flex-direction: row;
+            align-items: stretch;
+        }
+
+        #table {
+            flex-basis: 500px;
+            overflow-y: scroll;
+        }
+
+        #map {
+            flex-grow: 1;
+        }
+
+        #side-panel {
+            flex-basis: 500px;
+            overflow-y: scroll;
+
+        }
+
+        h2 {
+            padding: 2%;
+        }
+
+        button {
+            margin-bottom: 10px;
+            margin-left: 10px;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            width: 100%;
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 16px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        @media screen and (max-width: 1024px) {
+            #side-panel{
+                display:none
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main id="container">
+        <div id="map"></div>
+        <div id="side-panel">
+
+            <h2>List of Libraries in Washington State</h2>
+            <button>Sort by Name of Cities</button>
+
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>City</th>
+                </tr>
+            </table>
+
+        </div>
+    </main>
+    <script>
+        mapboxgl.accessToken =
+            'pk.eyJ1IjoiYXByaWw0MjkiLCJhIjoiY2xhazBnbjVpMGZqdjN2bXhhc2g1ZTI2NyJ9.1quhD-3WIUORxYG0TJhaPA';
+        const map = new mapboxgl.Map({
+            container: 'map', // container ID
+            style: 'mapbox://styles/mapbox/streets-v11', // style URL
+            zoom: 6, // starting zoom
+            center: [-120.7401, 47.7511] // starting center
+        });
+
+        async function geojsonFetch() {
+            // libraries
+            let response = await fetch('assets/Washington_Libraries_Locations.geojson');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            let libraries = await response.json();
+            // counties
+            response = await fetch('assets/Washington_Counties_(no_water).geojson');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            let counties = await response.json();
+            // generate table
+            var table = document.getElementsByTagName("table");
+            for (let i = 0; i < libraries.features.length; i++) {
+                // console.log(libraries.features[i].properties.OBJECTID);
+
+                // var lng = await libraries.features[i].geometry.coordinates[0];
+                // var lat = await libraries.features[i].geometry.coordinates[1];
+
+                // Create an empty <tr> element and add it to the 1st position of the table:
+                var row = table[0].insertRow(-1);
+
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+                cell1.innerHTML = await libraries.features[i].properties.OBJECTID;
+                cell2.innerHTML = await libraries.features[i].properties.Library;
+                cell3.innerHTML = await libraries.features[i].properties.LDLI_City;;
+
+            }
+
+            map.on('load', function loadingData() {
+                // counties
+                map.addSource('counties', {
+                    type: 'geojson',
+                    data: counties
+                });
+                map.addLayer({
+                    'id': 'counties-layer',
+                    'type': 'fill',
+                    'source': 'counties',
+                    'paint': {
+                        'fill-color': '#999999',
+                        'fill-opacity': 0.3
+                    }
+                });
+                // libraries
+                map.addSource('libraries', {
+                    type: 'geojson',
+                    data: libraries
+                });
+                map.addLayer({
+                    'id': 'libraries-layer',
+                    'type': 'circle',
+                    'source': 'libraries',
+                    'paint': {
+                        'circle-radius': 6,
+                        'circle-stroke-width': 1,
+                        'circle-color': 'yellow',
+                        'circle-stroke-color': 'grey'
+                    }
+                });
+            });
+
+        }
+
+        geojsonFetch();
+        // button
+        let btn = document.getElementsByTagName("button")[0];
+        btn.addEventListener('click', sortTable);
+
+        // sort table
+        function sortTable(e) {
+            let table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementsByTagName("table")[0];
+            switching = true;
+            /* Make a loop that will continue until
+            no switching has been done: */
+            while (switching) {
+                // Start by saying: no switching is done:
+                switching = false;
+                rows = table.getElementsById("City");
+                /* Loop through all table rows (except the
+                first, which contains table headers): */
+                for (i = 1; i < (rows.length - 1); i++) {
+                    // Start by saying there should be no switching:
+                    shouldSwitch = false;
+                    /* Get the two elements you want to compare,
+                    one from current row and one from the next: */
+                    x = rows[i].getElementsByTagName("td")[1];
+                    y = rows[i + 1].getElementsByTagName("td")[1];
+                    //check if the two rows should switch place:
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                        //if so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
+                }
+                }
+
+                if (shouldSwitch) {
+                    /*If a switch has been marked, make the switch
+                    and mark that a switch has been done:*/
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+            }
+    </script>
+
+</body>
+
+</html>

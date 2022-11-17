@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>UW Libraries</title>
+    <title>Load data from an external GeoJSON file</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
@@ -55,13 +55,15 @@
     <main id="container">
         <div id="table">
 
-            <h2>UW Libraries</h2>
+            <h2>Earthquake List</h2>
             <button onclick="sortTable()">Sort by Magnitude</button>
+
 
             <table>
                 <tr>
                     <th>id</th>
                     <th>magnitude</th>
+                    <th>timestamp</th>
                 </tr>
             </table>
 
@@ -70,53 +72,72 @@
 
     </main>
     <script>
-        /* MAP BASIC LOADING */
-        mapboxgl.accessToken = 'pk.eyJ1IjoiYXByaWw0MjkiLCJhIjoiY2xhazBnbjVpMGZqdjN2bXhhc2g1ZTI2NyJ9.1quhD-3WIUORxYG0TJhaPA';
+        mapboxgl.accessToken =
+            'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
         const map = new mapboxgl.Map({
             container: 'map', // container ID
-            style: 'mapbox://styles/mapbox/streets-v11', // style URL
-            zoom: 14.7, // starting zoom
-            center: [-122.3095, 47.654] // starting center
+            style: 'mapbox://styles/mapbox/satellite-v9', // style URL
+            zoom: 5.5, // starting zoom
+            center: [138.043, 38] // starting center
         });
-        /* GEOJSON FETCH */
+
+
         async function geojsonFetch() {
-            // Set variables
-            let response, libraries, uw, table;
-            // libraries data
-            response = await fetch('assets/libraries.geojson');
+
+
+            let response = await fetch('assets/earthquakes.geojson');
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            libraries = await response.json();
-            // uw data
-            response = await fetch('assets/uw.json');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            uw = await response.json();
-            // Generate table
-            table = document.getElementsByTagName("table")[0];
-            let row, cell1, cell2;
-            for (let i = 0; i < libraries.features.length; i++) {
-                // Create an empty <tr> element and add it to the 1st position of the table:
-                row = table[0].insertRow(-1);
-                cell1 = row.insertCell(0);
-                cell2 = row.insertCell(1);
-                cell1.innerHTML = await libraries.features[i].properties.id;
-                cell2.innerHTML = await libraries.features[i].properties.magnititude;
             }
 
-            /* ADD MAP LAYERS */
-            map.on('load', function loadingData() {
-                // libraries data
-                map.addSource('libraries', {
+            let earthquakes = await response.json();
+
+
+            response = await fetch('assets/japan.json');
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            let japan = await response.json();
+
+
+            var table = document.getElementsByTagName("table");
+            for (let i = 0; i < earthquakes.features.length; i++) {
+                // console.log(earthquakes.features[i].properties.id);
+
+                var lng = await earthquakes.features[i].geometry.coordinates[0];
+                var lat = await earthquakes.features[i].geometry.coordinates[1];
+
+                // Create an empty <tr> element and add it to the 1st position of the table:
+                var row = table[0].insertRow(-1);
+
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+                cell1.innerHTML = await earthquakes.features[i].properties.id;
+                cell2.innerHTML = await earthquakes.features[i].properties.mag;
+                cell3.innerHTML = await new Date(earthquakes.features[i].properties.time).toLocaleDateString("en-US");
+
+            }
+
+
+
+
+            map.on('load', () => {
+
+
+
+                map.addSource('earthquakes', {
                     type: 'geojson',
-                    data: libraries
+                    data: earthquakes
                 });
+
                 map.addLayer({
-                    'id': 'libraries-layer',
+                    'id': 'earthquakes-layer',
                     'type': 'circle',
-                    'source': 'libraries',
+                    'source': 'earthquakes',
                     'paint': {
                         'circle-radius': 8,
                         'circle-stroke-width': 2,
@@ -124,21 +145,33 @@
                         'circle-stroke-color': 'white'
                     }
                 });
-                // uw data
-                map.addSource('uw', {
+
+
+                map.addSource('japan', {
                     type: 'geojson',
-                    data: uw
+                    data: japan
                 });
+
                 map.addLayer({
-                    'id': 'uw-layer',
+                    'id': 'japan-layer',
                     'type': 'fill',
-                    'source': 'uw',
+                    'source': 'japan',
                     'paint': {
                         'fill-color': '#0080ff', // blue color fill
                         'fill-opacity': 0.5
                     }
                 });
+
+
+
+
+
+
             });
+
+
+
+
         }
 
         geojsonFetch()
@@ -146,11 +179,8 @@
                 console.log('There has been a problem with your fetch operation: ' + e.message);
             });
 
-        /* CREATE BUTTON */
-        let btn = document.getElementsByTagName("button")[0];
-        btn.addEventListener('click', sortTable);
 
-        /* SORT TABLE */
+
         function sortTable() {
             var table, rows, switching, i, x, y, shouldSwitch;
             table = document.getElementsByTagName("table")[0];

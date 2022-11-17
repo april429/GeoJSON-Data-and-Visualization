@@ -173,14 +173,14 @@
         // sort table
         function sortTable(e) {
             let table, rows, switching, i, x, y, shouldSwitch;
-            table = document.getElementsByTagName("table")[0];
+            table = document.getElementsByTagName("table")[2]; // city = table[2]?
             switching = true;
             /* Make a loop that will continue until
             no switching has been done: */
             while (switching) {
                 // Start by saying: no switching is done:
                 switching = false;
-                rows = table.getElementsById("City");
+                rows = table.rows; //city's rows
                 /* Loop through all table rows (except the
                 first, which contains table headers): */
                 for (i = 1; i < (rows.length - 1); i++) {
@@ -191,7 +191,7 @@
                     x = rows[i].getElementsByTagName("td")[1];
                     y = rows[i + 1].getElementsByTagName("td")[1];
                     //check if the two rows should switch place:
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) { //duplicates?
                         //if so, mark as a switch and break the loop:
                         shouldSwitch = true;
                         break;
